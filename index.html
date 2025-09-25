@@ -396,96 +396,71 @@ if (y) y.textContent = new Date().getFullYear();
   });
 </script> 
 
-<!-- A) CDN 改写：把相对路径 ./assets/xxx.jpg 改成 Statically 按需缩图的 CDN 地址 -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // TODO：如与你仓库不一致，请改成你自己的
-  const GH_USER   = 'fannie911';
-  const GH_REPO   = 'homepage';
-  const GH_BRANCH = 'main';
-
+  /* ========= ① 目标宽度估算：按容器宽度和 DPR ========= */
   function targetW(img){
-    const dpr = Math.min(window.devicePixelRatio || 1, 2); // 不用取更高，省流
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const box = img.closest('.ph') || img.closest('.pub') || img.parentElement;
     const w   = (box?.clientWidth || img.clientWidth || 600) * dpr;
-    return Math.max(360, Math.min(1200, Math.round(w)));   // 360~1200 之间
+    return Math.max(360, Math.min(1200, Math.round(w)));
   }
-  // 对每一段路径做编码（支持中文、空格等），但不编码斜杠
-  function encodePath(p){ return p.split('/').map(encodeURIComponent).join('/'); }
-  // 生成 Statically 按需缩图 URL（输出 JPG；不想走 CDN 的 <img> 加 data-cdn="no"）
-  function toStatically(url, w, q=76){
-    const rawPath = url.replace(/^\.\//,'').replace(/^\//,''); // 去掉 ./ 或 /
-    const encPath = encodePath(rawPath);
-    return `https://cdn.statically.io/gh/${
-      encodeURIComponent(GH_USER)}/${
-      encodeURIComponent(GH_REPO)}/${
-      encodeURIComponent(GH_BRANCH)}/${
-      encPath}?w=${w}&q=${q}&f=jpg`;
+
+  /* ========= ② 用 Weserv 按需缩图（只保留库里一张原图） ========= */
+  function toWeserv(url, w, q = 75){
+    const abs = new URL(url, document.baseURI).href; // 相对 -> 绝对
+    return `https://images.weserv.nl/?url=${encodeURIComponent(abs)}&w=${w}&output=jpg&q=${q}`;
   }
+
+  /* ========= ③ 改写单张图片的 src / data-src ========= */
   function rewrite(img){
     const w = targetW(img);
-    const fix = s => (s && !/^https?:\/\//i.test(s)) ? toStatically(s, w) : s;
-    // 若你后面用懒加载把 src 挪到 data-src，这里也一并改写
-    if (img.dataset.src){ img.dataset.src = fix(img.dataset.src); }
-    else if (img.getAttribute('src')) {
-      const now = img.getAttribute('src');
-      if (!/^https?:\/\//i.test(now)) img.setAttribute('src', fix(now));
-    }
+    const fix = s => (s && !/^data:|^blob:|^https?:\/\//i.test(s)) ? toWeserv(s, w) : s;
+    if (img.dataset.src) img.dataset.src = fix(img.dataset.src); // 懒加载用
+    const now = img.getAttribute('src');
+    if (now) img.setAttribute('src', fix(now));                  // 直接可见
   }
-  // 先统一改写所有图片到 CDN
-  document.querySelectorAll('img:not([data-cdn="no"])').forEach(rewrite);
-  // 视口变化时，轻量重写（节流）
-  let tid;
-  window.addEventListener('resize', () => {
-    clearTimeout(tid);
-    tid = setTimeout(() => {
-      document.querySelectorAll('img:not([data-cdn="no"])').forEach(rewrite);
-    }, 200);
-  });
-});
-</script>
 
-<!-- B) 懒加载属性兜底：首屏必要图“提前”，其余默认懒加载 -->
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  // 兜底：所有图片懒加载 & 异步解码
-  document.querySelectorAll('img').forEach(img=>{
+  /* ========= ④ 先：CDN 改写（跳过 data-cdn="no"） ========= */
+  const allImgs = Array.from(document.querySelectorAll('img:not([data-cdn="no"])'));
+  allImgs.forEach(rewrite);
+
+  /* ========= ⑤ 中：懒加载兜底 + 首屏优先（只让 1 张首图抢先） ========= */
+  allImgs.forEach(img=>{
     if (!img.hasAttribute('loading')) img.loading = 'lazy';
     img.decoding = 'async';
   });
-  // 首屏更重要的图（头像 + 每个相册第一张）优先
-  document.querySelectorAll('.avatar, .proj .ph img:first-child').forEach(img=>{
-    img.loading = 'eager';
-    img.fetchPriority = 'high';
-  });
-});
-</script>
+  document.querySelectorAll('.avatar, #publications .proj:first-of-type .ph img:first-child')
+    .forEach(img=>{
+      img.loading = 'eager';
+      img.fetchPriority = 'high';
+    });
 
-<!-- C) 相册可视懒加载：相册里非首张进入视口才真正加载 -->
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const slides = document.querySelectorAll('.ph img:not(:first-child)');
-  slides.forEach(img=>{
-    // 把当前（已被 A 段改写后的）src 保存到 data-src，然后移除 src 防止立刻下载
-    const current = img.getAttribute('src') || img.currentSrc;
-    if (current) img.dataset.src = current;
-    img.removeAttribute('src');
-    img.loading = 'lazy';
-    img.decoding = 'async';
+  /* ========= ⑥ 后：相册（.ph）非首张进入视口再加载 ========= */
+  const albumImgs = document.querySelectorAll('.ph img:not(:first-child):not([data-cdn="no"])');
+  albumImgs.forEach(img=>{
+    if (!img.dataset.src) img.dataset.src = img.getAttribute('src') || img.currentSrc;
+    img.removeAttribute('src'); // 阻止立即下载
   });
   const io = new IntersectionObserver(entries=>{
     entries.forEach(e=>{
       if (e.isIntersecting) {
         const img = e.target;
-        if (img.dataset.src) {
-          img.src = img.dataset.src;
-          delete img.dataset.src;
-        }
+        if (img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; }
         io.unobserve(img);
       }
     });
-  }, { root: null, rootMargin: '200px' }); // 提前 200px 预加载
-  slides.forEach(img=>io.observe(img));
+  }, { root: null, rootMargin: '200px' });
+  albumImgs.forEach(img=>io.observe(img));
+
+  /* ========= ⑦ 视口变化时，适度重写一次 ========= */
+  let tid;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(tid);
+    tid = setTimeout(()=>{
+      document.querySelectorAll('img:not([data-cdn="no"])').forEach(rewrite);
+    }, 200);
+  });
 });
 </script>
 
