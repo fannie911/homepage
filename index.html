@@ -144,7 +144,7 @@
 
           <div class="proj" data-keywords="hydrogel ES wound monitoring">
             <div class="ph">
-              <img src="./assets/ACSsensors.png" alt="自适应导电水凝胶 × 电刺激">
+              <img src="./assets/ACSsensors.jpg" alt="自适应导电水凝胶 × 电刺激">
             </div>
             <div class="ct">
               <h4>Bioactive Self-Adaptive Hydrogel Platform for Integrated Electrical Stimulation Therapy and Clinical Monitoring of Postoperative Wound</h4>
@@ -163,7 +163,7 @@
 
           <div class="proj" data-keywords="microfluidics selenium HA microspheres">
             <div class="ph">
-              <img src="./assets/Materialstodaybio.png" alt="HAMA/CS-Se@PDA 微球">
+              <img src="./assets/Materialstodaybio.jpg" alt="HAMA/CS-Se@PDA 微球">
             </div>
             <div class="ct">
               <h4>Microfluidics-enabled polydopamine-coated selenium nanoparticles in hyaluronic hydrogel microspheres for targeted antioxidant and immunomodulatory therapy of ulcerative colitis</h4>
@@ -201,7 +201,7 @@
 
           <div class="proj" data-keywords="GLPM">
             <div class="ph">
-              <img src="./assets/FXC.png" alt="GLPM">
+              <img src="./assets/FXC.jpg" alt="GLPM">
             </div>
             <div class="ct">
               <h4>Injectable CSmA Hydrogel Microspheres Co-Loaded with GLPM Nanozyme, Dexamethasone, and Stem Cells for Synergistic Osteoarthritis</h4>
@@ -218,10 +218,10 @@
           <div class="proj" data-keywords="AI conductive hydrogels">
             <div class="ph">
               <img src="./assets/AI1.jpg" alt="AI综述1">
-              <img src="./assets/AI2.png" alt="AI综述2">
-              <img src="./assets/AI3.png" alt="AI综述3">
-              <img src="./assets/AI4.png" alt="AI综述4">
-              <img src="./assets/AI5.png" alt="AI综述5">
+              <img src="./assets/AI2.jpg" alt="AI综述2">
+              <img src="./assets/AI3.jpg" alt="AI综述3">
+              <img src="./assets/AI4.jpg" alt="AI综述4">
+              <img src="./assets/AI5.jpg" alt="AI综述5">
             </div>
             <div class="ct">
               <h4>AI-powered conductive hydrogels for healthcare</h4>
@@ -262,8 +262,8 @@
          
           <div class="proj" data-keywords="NSFC drawing writing">
             <div class="ph">
-              <img src="./assets/国自然fcp2025.png" alt="青C-1">
-              <img src="./assets/国自然fcp2025-2.png" alt="青C-2">
+              <img src="./assets/国自然fcp2025.jpg" alt="青C-1">
+              <img src="./assets/国自然fcp2025-2.jpg" alt="青C-2">
             </div>
             <div class="ct">
               <h4>2025年青C：时序递送一氧化氮的锰基超分子水凝胶构建及其修复糖尿病足溃疡研究</h4>
@@ -410,6 +410,43 @@
       last = now;
     },{passive:false});
   });
+
+<script>
+  // 给所有图片默认懒加载 + 异步解码
+  document.querySelectorAll('img').forEach(img=>{
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.fetchPriority = 'low';
+  });
+  // 对“首屏最需要”的那几张图（如第一个论文/项目的第一张、头像）再提一提优先级
+  document.querySelectorAll('.proj .ph img:first-child, .avatar').forEach(img=>{
+    img.loading = 'eager';
+    img.fetchPriority = 'high';
+  });
+</script>
+
+<script>
+// 只让每个相册的第1张立即加载，其余图片进入视口再加载
+const lazySlides = document.querySelectorAll('.ph img:not(:first-child)');
+lazySlides.forEach(img => {
+  if (!img.dataset.src) { img.dataset.src = img.src; }
+  img.removeAttribute('src');             // 断开立即下载
+  img.loading = 'lazy';
+  img.decoding = 'async';
+});
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const img = e.target;
+      if (img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; }
+      io.unobserve(img);
+    }
+  });
+}, { root: null, rootMargin: '200px' });  // 提前 200px 预加载
+lazySlides.forEach(img => io.observe(img));
+</script>
+
+
 </script>
 </body>
 </html>
