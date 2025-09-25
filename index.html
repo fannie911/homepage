@@ -85,7 +85,7 @@
     }
 
     /* 让每篇论文 .pub 在大屏按多列排，小屏单列排 */
-    #pub-list{
+    #pub-list, #patent-list{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap:16px;
@@ -131,7 +131,7 @@
             <div class="kv"><strong>电话：</strong>18120739421</div>
             <div class="kv"><strong>所在地：</strong>福建 · 厦门</div>
             <div class="kv"><strong>籍贯：</strong>江西 · 南昌</div>
-
+          </div>
         </div>
       </div>
     </section>
@@ -244,7 +244,7 @@
              <!-- ③ 专利 -->
     <section id="patents" class="section" data-type="paper">
       <div class="hd"><h2>专利</h2></div>
-      <div class="bd" id="pub-list">
+      <div class="bd" id="patent-list">
         <!-- 每条论文为 .pub；可复制粘贴 -->
          <article class="pub" data-keywords="ACS Sensors hydrogel electrical stimulation wound monitoring">
               <div class="title">一种导电水凝胶敷料、制备方法及其在电促愈合中的应用</div>
@@ -304,6 +304,8 @@
                  <div><span class="badge">用于电刺激治疗与术后创面临床监测的生物活性自适应水凝胶平台</span></div>
                 <div><span class="badge">超临界洋葱提取物/GO-PR/PVAMA三维网络水凝胶用于伤口的无痕管理</span></div>
                 <div><span class="badge">基于金属配位簇与定向盐桥氢键的硒辛酸水凝胶用于肿瘤术后伤口的管理</span></div>
+              </div>            <!-- ✅ 关闭 .labels -->
+              </div>
             <div class="tl" data-keywords="counselor HQU 2021-2023">
               <b>2021.07–2023.06 | 华侨大学材料学院 · 专职辅导员</b>
               <div class="muted">学生工作，活动组织，谈心谈话，宣传运营</div>
@@ -392,6 +394,7 @@ if (y) y.textContent = new Date().getFullYear();
       last = now;
     },{passive:false});
   });
+</script> 
 
 <script>
   // 给所有图片默认懒加载 + 异步解码
@@ -486,4 +489,5 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+</body>
 </html>
