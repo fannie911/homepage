@@ -91,12 +91,6 @@
       gap:16px;
     }
 
-    /* 论文列表容器按项目同款网格排版：最少 320px 一列，能排几列就排几列 */
-    #pub-list{
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 16px;
-    }
 
     /* 让每篇论文卡片自适应充满网格单元 */
     .pub{ height: 100%; }
@@ -112,6 +106,7 @@
   </style>
 </head>
 <body>
+
   <div class="wrap">
 
     <!-- ① 个人介绍（最上面的卡片） -->
@@ -247,7 +242,7 @@
 
 
              <!-- ③ 专利 -->
-    <section id="publications" class="section" data-type="paper">
+    <section id="patents" class="section" data-type="paper">
       <div class="hd"><h2>专利</h2></div>
       <div class="bd" id="pub-list">
         <!-- 每条论文为 .pub；可复制粘贴 -->
@@ -258,7 +253,10 @@
                 <span class="badge">中国发明专利</span>
                 <span class="badge">申请号: 202510461681.X.</span>
               </div>
-        </section>
+</article>
+</div> <!-- .bd -->
+</section>
+
 
     <!-- ④ 项目/成果（横向滑动 + 双击放大） -->
     <section id="projects" class="section" data-type="project">
@@ -349,32 +347,9 @@
 
 <script>
   // 年份
-  document.getElementById('year').textContent = new Date().getFullYear();
+const y = document.getElementById('year');
+if (y) y.textContent = new Date().getFullYear();
 
-  // chips 过滤整块 section
-  const chips = document.querySelectorAll('#chips .chip');
-  const sections = document.querySelectorAll('.section');
-  chips.forEach(c=>{
-    c.addEventListener('click', ()=>{
-      chips.forEach(x=>x.classList.remove('active'));
-      c.classList.add('active');
-      const ft = c.dataset.filter;
-      sections.forEach(s=>{
-        const t = s.getAttribute('data-type');
-        s.classList.toggle('hide', !(ft==='all' || t===ft || (t==='all' && ft==='all')));
-      });
-    });
-  });
-
-  // 论文搜索
-  const q = document.getElementById('q');
-  q.addEventListener('input', ()=>{
-    const val = q.value.trim().toLowerCase();
-    document.querySelectorAll('#pub-list .pub').forEach(p=>{
-      const text = (p.innerText + ' ' + (p.dataset.keywords||'')).toLowerCase();
-      p.style.display = text.includes(val) ? '' : 'none';
-    });
-  });
 
   // 作者名自动加粗（Ying Fang / 方莺）
   (function(){
@@ -417,7 +392,6 @@
       last = now;
     },{passive:false});
   });
-</script>  <!-- ← 这一行是你现在缺失的 -->
 
 <script>
   // 给所有图片默认懒加载 + 异步解码
@@ -454,7 +428,62 @@ const io = new IntersectionObserver(entries => {
 lazySlides.forEach(img => io.observe(img));
 </script>
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const GH_USER   = 'fannie911';
+  const GH_REPO   = 'homepage';
+  const GH_BRANCH = 'main';
 
+  function targetW(img){
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const box = img.closest('.ph') || img.closest('.pub') || img.parentElement;
+    const w   = (box?.clientWidth || img.clientWidth || 600) * dpr;
+    return Math.max(360, Math.min(1200, Math.round(w)));
+  }
+
+  // ✅ 逐段编码路径，避免中文/空格/括号等导致 404
+  function encodePath(p){
+    return p.split('/').map(encodeURIComponent).join('/');
+  }
+
+  // ⬇⬇ 用这版替换你现有的 toStatically
+  function toStatically(url, w, q = 76){
+    // 本地相对路径转成仓库路径
+    const rawPath = url.replace(/^\.\//, '').replace(/^\//, '');
+    const encPath = encodePath(rawPath);
+    const u = `https://cdn.statically.io/gh/${
+      encodeURIComponent(GH_USER)}/${
+      encodeURIComponent(GH_REPO)}/${
+      encodeURIComponent(GH_BRANCH)}/${
+      encPath}?w=${w}&q=${q}&f=jpg`;
+    return u;
+  }
+
+  function rewrite(img){
+    const w = targetW(img);
+    const fix = s => (s && !/^https?:\/\//i.test(s)) ? toStatically(s, w) : s;
+
+    // 已经懒加载占位的，用 data-src；否则直接改 src
+    if (img.dataset.src){
+      img.dataset.src = fix(img.dataset.src);
+    } else if (img.getAttribute('src')){
+      const now = img.getAttribute('src');
+      if (!/^https?:\/\//i.test(now)) img.setAttribute('src', fix(now));
+    }
+  }
+
+  // 先统一“改写到 CDN”，再去做懒加载/相册逻辑
+  document.querySelectorAll('img:not([data-cdn="no"])').forEach(rewrite);
+
+  // 视口变化时按需更新（可选）
+  let tid;
+  window.addEventListener('resize', () => {
+    clearTimeout(tid);
+    tid = setTimeout(() => {
+      document.querySelectorAll('img:not([data-cdn="no"])').forEach(rewrite);
+    }, 200);
+  });
+});
 </script>
-</body>
+
 </html>
