@@ -117,7 +117,14 @@
     <!-- ① 个人介绍（最上面的卡片） -->
     <section class="hero">
       <div class="hero-grid">
-        <img src="./avatar.jpg" alt="avatar" class="avatar" onerror="this.style.visibility='hidden'">
+        <img src="./avatar.jpg"
+     alt="avatar"
+     class="avatar"
+     fetchpriority="high"
+     loading="eager"
+     decoding="async"
+     onerror="this.style.visibility='hidden'">
+
         <div>
           <h1>方莺</h1>
           <p class="subtitle">华侨大学 · 材料科学与工程 | 生物医用材料</p>
@@ -410,6 +417,7 @@
       last = now;
     },{passive:false});
   });
+</script>  <!-- ← 这一行是你现在缺失的 -->
 
 <script>
   // 给所有图片默认懒加载 + 异步解码
