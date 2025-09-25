@@ -260,7 +260,7 @@
 
     <!-- ④ 项目/成果（横向滑动 + 双击放大） -->
     <section id="projects" class="section" data-type="project">
-      <div class="hd"><h2>所参与项目</h2></div>
+      <div class="hd"><h2>绘制项目示意图</h2></div>
       <div class="bd">
         <div class="flex">
 
@@ -271,7 +271,7 @@
               <img src="./assets/国自然fcp2025-2.jpg" alt="青C-2">
             </div>
             <div class="ct">
-              <h4>2025年青C：时序递送一氧化氮的锰基超分子水凝胶构建及其修复糖尿病足溃疡研究</h4>
+              <h4>时序递送一氧化氮的锰基超分子水凝胶构建及其修复糖尿病足溃疡研究示意图</h4>
               <p class="muted">参与国家自然科学基金的攥写与绘图</p>
             </div>
           </div>
@@ -283,8 +283,8 @@
               <img src="./assets/国自然cbq2025-3.jpg" alt="青C-压电3">
             </div>
             <div class="ct">
-              <h4>2025年青C：带隙-尺寸可控的超声压电纳米制剂设计及其在三阴性乳腺癌治疗中的机制研究</h4>
-              <p class="muted">参与国家自然科学基金的攥写与绘图</p>
+              <h4>带隙-尺寸可控的超声压电纳米制剂设计及其在三阴性乳腺癌治疗中的机制研究示意图</h4>
+              <p class="muted">参与国家自然科学基金的攥绘图</p>
             </div>
           </div>
 
@@ -462,6 +462,68 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 200);
   });
 });
+</script>
+<script>
+/* 自动轮播相册（.proj .ph，多图才启用） */
+(function(){
+  // 关闭自动播放的“减少动态”系统偏好
+  const prefersReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReduce) return;
+
+  const AUTOPLAY_MS  = 3500; // 每张停留时间
+  const RESUME_AFTER = 5000; // 用户交互后多久恢复自动播放（毫秒）
+
+  // 启动一个相册容器的自动播放
+  function start(ph){
+    if (ph.dataset.autoplay === 'off') return; // 可用 data-autoplay="off" 禁用
+    if (ph._timer) return;                     // 已在播放
+    // 当前索引
+    if (!ph.dataset.idx) ph.dataset.idx = '0';
+    ph._timer = setInterval(()=>{
+      // 有用户交互则暂不切换
+      if (ph._pausedUntil && Date.now() < ph._pausedUntil) return;
+
+      const slides = ph.querySelectorAll('img');
+      if (slides.length < 2) return;
+
+      let i = parseInt(ph.dataset.idx || '0', 10);
+      i = (i + 1) % slides.length;
+      ph.dataset.idx = String(i);
+
+      // 平滑滚动到下一张（配合 CSS 的 scroll-snap）
+      const target = slides[i];
+      if (target) {
+        ph.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+      }
+    }, AUTOPLAY_MS);
+  }
+
+  // 停止一个相册容器的自动播放
+  function stop(ph){
+    if (ph._timer) { clearInterval(ph._timer); ph._timer = null; }
+  }
+
+  // 可视区内才播放
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      const ph = entry.target;
+      if (entry.isIntersecting) start(ph);
+      else stop(ph);
+    });
+  }, { root: null, threshold: 0.5 });
+
+  // 绑定：多图相册才观察；用户交互时临时暂停
+  document.querySelectorAll('.proj .ph').forEach(ph=>{
+    if (ph.querySelectorAll('img').length < 2) return;
+    io.observe(ph);
+
+    // 任何交互都暂停一会儿，避免和用户操作抢夺
+    const pause = ()=>{ ph._pausedUntil = Date.now() + RESUME_AFTER; };
+    ['mouseenter','mousedown','touchstart','wheel','keydown'].forEach(evt=>{
+      ph.addEventListener(evt, pause, {passive:true});
+    });
+  });
+})();
 </script>
 
 
