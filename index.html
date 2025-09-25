@@ -53,9 +53,21 @@
     .badge{font-size:.78rem;padding:3px 8px;border-radius:8px;background:var(--soft);color:var(--pri-2)}
 
     /* 项目小卡片 + 横向相册 */
-    .flex{display:flex;gap:16px;flex-wrap:wrap}
-    .proj{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;width:100%}
-    @media (min-width:700px){ .proj{width:min(100%,360px)} }
+    .flex{
+  display:grid;
+  /* 最少 320px 一列，能放几列就放几列，自动铺满宽度 */
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap:16px;
+}
+
+.proj{
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden;
+  background:#fff;
+  width:auto;          /* ← 关键：不再固定 360px */
+}
+
     .proj .ct{padding:12px}
     .proj h4{margin:0 0 8px}
     .proj .ph{
@@ -63,9 +75,31 @@
       align-items:center;padding:0 8px;background:#fff;height:auto;cursor:grab;
     }
     .proj .ph img{
-      flex:0 0 100%;width:100% !important;height:160px !important;object-fit:contain !important;
-      display:block;background:#fff;scroll-snap-align:start;border-radius:8px;
+      width:100%;
+      height:clamp(180px, 28vw, 320px);
+      object-fit:contain;  /* 不裁切，整图展示 */
+      display:block;
+      background:#fff;
+      scroll-snap-align:start;
+      border-radius:8px;
     }
+
+    /* 让每篇论文 .pub 在大屏按多列排，小屏单列排 */
+    #pub-list{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap:16px;
+    }
+
+    /* 论文列表容器按项目同款网格排版：最少 320px 一列，能排几列就排几列 */
+    #pub-list{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    /* 让每篇论文卡片自适应充满网格单元 */
+    .pub{ height: 100%; }
 
     /* 放大查看 */
     .lightbox{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.85);padding:24px}
@@ -101,11 +135,12 @@
     </section>
 
     <!-- ③ 论文 -->
-    <!-- ④ 项目/成果（横向滑动 + 双击放大） -->
-    <section id="projects" class="section" data-type="project">
-      <div class="hd"><h2>所参与项目及相关成果作品</h2></div>
-      <div class="bd">
-        <div class="flex">
+
+        <section id="publications" class="section" data-type="paper">
+          <div class="hd">
+            <h2>论文成果</h2>
+          </div>
+          <div class="bd" id="pub-list">
 
           <div class="proj" data-keywords="hydrogel ES wound monitoring">
             <div class="ph">
@@ -123,6 +158,8 @@
               <!-- EDIT HERE: 替换你的正式链接（DOI/期刊页） -->
               <div><a href="https://doi.org/10.1021/acssensors.5c02154" target="_blank">DOI: 10.1021/acssensors.5c02154</a> ·</div>
               <div class="muted">简述：本研究构建了一种用于电刺激治疗与术后创面临床监测的生物活性自适应水凝胶平台，结合导电离子网络与动态交联机制，系统评估了该平台在止血、抗氧化、促血管生成及术后愈合监测中的作用。</div>
+            </div><!-- .ct -->
+          </div><!-- .proj -->
 
           <div class="proj" data-keywords="microfluidics selenium HA microspheres">
             <div class="ph">
@@ -131,7 +168,7 @@
             <div class="ct">
               <h4>Microfluidics-enabled polydopamine-coated selenium nanoparticles in hyaluronic hydrogel microspheres for targeted antioxidant and immunomodulatory therapy of ulcerative colitis</h4>
               <div class="meta">
-	      <b class="me">Ying Fang</b>†, Hongwei Yu†, Xiaochen Feng, Haike Xia, Yunze Xu,  Ranjith Kumar Kankala, Aizheng Chen, Chaoping Fu*. <b>Materials Today Bio</b>, 2025, 34, 102182.</div>
+	        <b class="me">Ying Fang</b>†, Hongwei Yu†, Xiaochen Feng, Haike Xia, Yunze Xu,  Ranjith Kumar Kankala, Aizheng Chen, Chaoping Fu*. <b>Materials Today Bio</b>, 2025, 34, 102182.</div>
               <div class="labels">
                 <span class="badge">Article</span>
                 <span class="badge">Q1</span>
@@ -139,7 +176,8 @@
               </div>
               <div><a href="https://doi.org/10.1016/j.mtbio.2025.102182" target="_blank">DOI: 10.1016/j.mtbio.2025.102182</a></div>
               <div class="muted">简述：本研究构建了微流控HAMA水凝胶微球，将聚多巴胺包覆的硒纳米粒静电-光交联嵌入，实现pH响应与粘膜粘附的结肠靶向递送，并证实其抑制LPS炎症、修复肠屏障；DSS结肠炎小鼠中显著缓解体重下降、疾病活动指数并保护结肠结构。</div>
-          </div>
+            </div><!-- .ct -->
+          </div><!-- .proj -->
 
           <div class="proj" data-keywords="conductive hydrogels review">
             <div class="ph">
@@ -158,7 +196,8 @@
               </div>
               <div><a href="https://doi.org/10.1093/rb/rbae127" target="_blank">DOI: 10.1093/rb/rbae127</a></div>
               <div class="muted">简述：本文系统综述了CHs的构建策略、电子/离子导电机制及其在糖尿病溃疡、感染创面、温度损伤等复杂创伤中的应用，阐明其通过抗菌抗炎、促进细胞迁移和血管新生等机制加速组织再生。同时，文章强调CHs在实时监测、电刺激控释、自供能系统等前沿技术中的拓展潜力，并前瞻性探讨其与AI融合以实现个体化创面管理与精准治疗的未来方向。</div>
-          </div>
+            </div><!-- .ct -->
+          </div><!-- .proj -->
 
           <div class="proj" data-keywords="GLPM">
             <div class="ph">
@@ -166,13 +205,15 @@
             </div>
             <div class="ct">
               <h4>Injectable CSmA Hydrogel Microspheres Co-Loaded with GLPM Nanozyme, Dexamethasone, and Stem Cells for Synergistic Osteoarthritis</h4>
-              <div class="meta">Feng X.†, <b>Ying Fang†</b>, Hongwei Yu, Yicheng Wang, Yunze Xu, Chunxiao Shi, Haike Xia, Ranjith Kumar Kankala, Aizheng Chen, Shibin Wang, Chaoping Fu*. <i>Under Review</i></div>
+              <div class="meta">Feng X.†, <b>Ying Fang†</b>, Hongwei Yu, Yicheng Wang, Yunze Xu, Chunxiao Shi, Haike Xia, Ranjith Kumar Kankala, Aizheng Chen, Shibin Wang, Chaoping Fu*. </div>
               <div class="labels">
                 <span class="badge">Article</span>
                 <span class="badge">Under Review</span>
                 <span class="badge">Co-First (2nd)</span>
+              </div>
               <div class="muted">简述：本研究通过微流控光交联制备得到ChSMA微球（≈125 μm）一次性共递送MnO₂纳米酶、地塞米松与BMSC，实现ROS清除、炎症抑制和软骨再生。</div>
-          </div>
+            </div><!-- .ct -->
+          </div><!-- .proj -->
 
           <div class="proj" data-keywords="AI conductive hydrogels">
             <div class="ph">
@@ -184,13 +225,19 @@
             </div>
             <div class="ct">
               <h4>AI-powered conductive hydrogels for healthcare</h4>
-              <div class="meta">Chaoping Fu†, <b>Ying Fang†</b>, Yue Li†, Qingzhi Ji, Changyong Li, Aizheng Chen, Shibin Wang, Meng Li, Lavonda Li, Lijie Yan, Junyi Sun, Long Bai, Xingcai Zhang*. <i>Under Review</i></div>
+              <div class="meta">Chaoping Fu†, <b>Ying Fang†</b>, Yue Li†, Qingzhi Ji, Changyong Li, Aizheng Chen, Shibin Wang, Meng Li, Lavonda Li, Lijie Yan, Junyi Sun, Long Bai, Xingcai Zhang*. </div>
               <div class="labels">
                  <span class="badge">Review</span>
                  <span class="badge">Under Review</span>
                 <span class="badge">Co-First (2nd)</span>
+              </div>
               <div class="muted">简述：本文从设计、合成到应用的全链条：通过高效处理大数据，AI加速材料优化并精准预测其性能。在医疗健康方面，AI驱动的导电水凝胶实现呼吸-心血管监测、个性化诊断、人造器官、运动康复及软体机器人等精准干预，构建人机共生新范式。</div>
-          </div>
+            </div><!-- .ct -->
+          </div><!-- .proj -->
+
+</div><!-- /#pub-list -->
+</section><!-- /#publications -->
+
 
              <!-- ③ 专利 -->
     <section id="publications" class="section" data-type="paper">
@@ -208,69 +255,11 @@
 
     <!-- ④ 项目/成果（横向滑动 + 双击放大） -->
     <section id="projects" class="section" data-type="project">
-      <div class="hd"><h2>所参与项目及相关成果作品</h2></div>
+      <div class="hd"><h2>所参与项目</h2></div>
       <div class="bd">
         <div class="flex">
 
-          <div class="proj" data-keywords="hydrogel ES wound monitoring">
-            <div class="ph">
-              <img src="./assets/ACSsensors.png" alt="自适应导电水凝胶 × 电刺激">
-            </div>
-            <div class="ct">
-              <h4>用于综合电刺激治疗和术后伤口临床监测的生物活性自适应水凝胶平台</h4>
-              <p class="muted">论文</p>
-              <a href="https://doi.org/10.1021/acssensors.5c02154" target="_blank">DOI: acssensors.5c02154</a>
-            </div>
-          </div>
-
-          <div class="proj" data-keywords="microfluidics selenium HA microspheres">
-            <div class="ph">
-              <img src="./assets/Materialstodaybio.png" alt="HAMA/CS-Se@PDA 微球">
-            </div>
-            <div class="ct">
-              <h4>透明质水凝胶微球中的微流控聚多巴胺包覆硒纳米粒子用于溃疡性结肠炎的靶向抗氧化和免疫调节治疗</h4>
-              <p class="muted">论文</p>
-              <a href="https://doi.org/10.1016/j.mtbio.2025.102182" target="_blank">DOI: j.mtbio.2025.102182</a>
-            </div>
-          </div>
-
-          <div class="proj" data-keywords="conductive hydrogels review">
-            <div class="ph">
-              <img src="./assets/RegenerativeBiomaterials.jpg" alt="综述1">
-              <img src="./assets/RegenerativeBiomaterials2.jpg" alt="综述2">
-              <img src="./assets/RegenerativeBiomaterials3.jpg" alt="综述3">
-            </div>
-            <div class="ct">
-              <h4>导电水凝胶：用于监测和治疗慢性伤口的智能敷料</h4>
-              <p class="muted">论文</p>
-              <a href="https://doi.org/10.1093/rb/rbae127" target="_blank">DOI: 10.1093/rb/rbae127</a>
-            </div>
-          </div>
-
-          <div class="proj" data-keywords="GLPM">
-            <div class="ph">
-              <img src="./assets/FXC.png" alt="GLPM">
-            </div>
-            <div class="ct">
-              <h4>与GLPM纳米酶、地塞米松和干细胞共负载的可注射硫酸软骨素-甲基丙烯酸酯水凝胶微球用于协同性骨关节炎</h4>
-              <p class="muted">论文（Under Review）</p>
-            </div>
-          </div>
-
-          <div class="proj" data-keywords="AI conductive hydrogels">
-            <div class="ph">
-              <img src="./assets/AI1.jpg" alt="AI综述1">
-              <img src="./assets/AI2.png" alt="AI综述2">
-              <img src="./assets/AI3.png" alt="AI综述3">
-              <img src="./assets/AI4.png" alt="AI综述4">
-              <img src="./assets/AI5.png" alt="AI综述5">
-            </div>
-            <div class="ct">
-              <h4>用于人类健康的人工智能导电水凝胶</h4>
-              <p class="muted">论文（Under Review）</p>
-            </div>
-          </div>
-
+         
           <div class="proj" data-keywords="NSFC drawing writing">
             <div class="ph">
               <img src="./assets/国自然fcp2025.png" alt="青C-1">
@@ -307,10 +296,9 @@
               <div class="muted">•	成绩：优良率：100%，平均分：90/100</div>
               <div class="muted">课题：自适应导电水凝胶敷料结合电刺激用于伤口修复与动态监测</div>
               <div class="labels">
-                <span class="badge">用于电刺激治疗与术后创面临床监测的生物活性自适应水凝胶平台</span>
-                <span class="badge">超临界洋葱提取物/GO-PR/PVAMA三维网络水凝胶用于伤口的无痕管理</span>
-                <span class="badge">基于金属配位簇与定向盐桥氢键的硒辛酸水凝胶用于肿瘤术后伤口的管理</span>
-            </div>
+                 <div><span class="badge">用于电刺激治疗与术后创面临床监测的生物活性自适应水凝胶平台</span></div>
+                <div><span class="badge">超临界洋葱提取物/GO-PR/PVAMA三维网络水凝胶用于伤口的无痕管理</span></div>
+                <div><span class="badge">基于金属配位簇与定向盐桥氢键的硒辛酸水凝胶用于肿瘤术后伤口的管理</span></div>
             <div class="tl" data-keywords="counselor HQU 2021-2023">
               <b>2021.07–2023.06 | 华侨大学材料学院 · 专职辅导员</b>
               <div class="muted">学生工作，活动组织，谈心谈话，宣传运营</div>
